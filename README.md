@@ -80,7 +80,7 @@ Both treble and bass rotors are driven by essentially the same kind of motor ass
 
 The bass rotor has considerably more moment of inertia than the treble rotor, so will tend to speed up and slow down more gradually; the large motor is quite powerful and so can attain full speed relatively quickly, whereas the small motor spindle exerts a smaller braking moment and so the rotor will slow quite gradually.
 
-In all cases, the acceleration behaviour is governed by a differential equation of the form
+In all cases, this can be boiled down to a constant acceleration rate $k$, so the acceleration is governed by
 
 $\ddot{\theta} = k$
 
@@ -104,18 +104,16 @@ Aunt Leslie is named after a song by Vulfpeck. Treat yourself.
 ## References
 
 Much of the electrical and mechanical detail:
-https://synthfool.com/docs/Leslie/Leslie_760_User_And_Servicemanual/
+- https://synthfool.com/docs/Leslie/Leslie_760_User_And_Servicemanual/
 
 Rotor speeds:
-https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets-speakers-accessories/41662-leslie-rotor-speeds
-https://www.dairiki.org/HammondWiki/LeslieRotationSpeed
+- https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets-speakers-accessories/41662-leslie-rotor-speeds
+- https://www.dairiki.org/HammondWiki/LeslieRotationSpeed
 
 Sam Battle's VFD-driven Leslie:
-https://www.youtube.com/watch?v=BuxLnKO7X8k&
-https://www.youtube.com/watch?v=ZemaoRTeqr8
+- https://www.youtube.com/watch?v=BuxLnKO7X8k&
+- https://www.youtube.com/watch?v=ZemaoRTeqr8
 
 Vulfpeck:
-https://www.vulfpeck.com/
-
-Aunt Leslie
-https://www.youtube.com/watch?v=t2pz6uNiheg
+- https://www.vulfpeck.com/
+- https://www.youtube.com/watch?v=t2pz6uNiheg

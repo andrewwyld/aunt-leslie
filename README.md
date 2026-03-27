@@ -14,7 +14,7 @@ I wanted to have a real Leslie speaker because it would allow me to place microp
 The treble rotor has a radius of about 204mm, and rotates at about 36RPM in the chorale setting and 380RPM in the tremolo setting. When shifting between settings, the rotor is accelerated or braked at a constant rate, taking about a second to adjust speed.
 
 #### Bass rotor
-TODO
+I need to oil the lower motor assembly, and when I next get in there I'll measure it.
 
 ## Phase shift mathematics
 The input signal will be shifted by a variable amount depending on a function designed to mimic the audio path through a Leslie speaker. A classic BBD chorus simply uses a sine function, but a lovely characteristic feature of a real Leslie is that the delay is slightly more complex, leading to an asymmetrical throb, particularly in the tremolo setting.
@@ -108,6 +108,7 @@ https://synthfool.com/docs/Leslie/Leslie_760_User_And_Servicemanual/
 
 Rotor speeds:
 https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets-speakers-accessories/41662-leslie-rotor-speeds
+https://www.dairiki.org/HammondWiki/LeslieRotationSpeed
 
 Sam Battle's VFD-driven Leslie:
 https://www.youtube.com/watch?v=BuxLnKO7X8k&

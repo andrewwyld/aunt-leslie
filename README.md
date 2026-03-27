@@ -98,6 +98,9 @@ gives the length of time the system must use the square expression to accelerate
 
 In future, there will be a continuously variable speed function, called VFD mode, inspired by the VFD-driven rotary speakers built by Sam Battle that can run at any speed at all. It might even be fun to drive the motor harder when the input signal is larger. Absolute scenes.
 
+## The Name
+Aunt Leslie is named after a song by Vulfpeck. Treat yourself.
+
 ## References
 
 Much of the electrical and mechanical detail:
@@ -109,3 +112,6 @@ https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets
 Sam Battle's VFD-driven Leslie:
 https://www.youtube.com/watch?v=BuxLnKO7X8k&
 https://www.youtube.com/watch?v=ZemaoRTeqr8
+
+Vulfpeck:
+https://www.vulfpeck.com/

@@ -10,9 +10,15 @@
 
 #include <JuceHeader.h>
 
+#define LEFT 0
+#define RIGHT 1
+#define TREBLE_HORN_A 0
+#define TREBLE_HORN_B 1
+
 #define CHORALE_RPM 50.f
 #define TREMOLO_RPM 400.f
 #define TREBLE_HORN_RADIUS_M 0.204f
+// #define BASS_WEDGE_RADIUS 0.204f ?
 #define SPEED_OF_SOUND_M_S 343.f
 
 //==============================================================================
@@ -29,7 +35,9 @@ public:
     constexpr static float TREMOLO_PERIOD_MS = 1000.f / TREMOLO_HZ;
     
     constexpr static float MAX_TREBLE_HORN_EXCURSION_S = SPEED_OF_SOUND_M_S / TREBLE_HORN_RADIUS_M;
-    constexpr static float INTRINSIC_BUFFER_DELAY_S = MAX_TREBLE_HORN_EXCURSION_S * 2.f;
+    constexpr static float INTRINSIC_BUFFER_DELAY_S = MAX_TREBLE_HORN_EXCURSION_S * 3.f;
+    
+    constexpr static float MIC_DISTANCE = 2.f; // as a factor of the horn radius
 
     //==============================================================================
     AuntLeslieAudioProcessor();
@@ -73,6 +81,8 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AuntLeslieAudioProcessor)
     
     float max_treble_horn_excursion_samples = 0.f;
+    // float max_bass_wedge_excursion_samples = 0.f
+    
     float chorale_frequency_per_sample = 0.f;
     float tremolo_frequency_per_sample = 0.f;
 
@@ -83,7 +93,7 @@ private:
     int delayLineRecordHeadPosition = 0;
     
     void initializeLines(int channelsIn, int delayLineLength);
-    float getReadHead(int writeHead);
+    float getReadHead(int hornIdx, int stereoChannel, int writeHead);
 
     long lastSample = 0; // current time
 };

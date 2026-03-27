@@ -166,42 +166,56 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // delay line recording boundaries for all channels
     int delayLineRecordLength = std::min(sampleCount, delayLineLength);
     int delayLineInputStart = std::max(0, sampleCount - delayLineLength);
+
+    // we will assume two ins, two outs
+    // TODO ensure this!
+    float* outputs[] = {buffer.getWritePointer(LEFT), buffer.getWritePointer(RIGHT)};
+    const float* inputs[] = {buffer.getReadPointer(TREBLE_HORN_A), buffer.getReadPointer(TREBLE_HORN_B)};
     
-    // clear outputs with no corresponding inputs
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    // process variable delay
+
+    // for either stereo output channel
+    for (int outputIdx = 0; outputIdx < totalNumOutputChannels; ++outputIdx)
     {
-        buffer.clear (i, 0, sampleCount);
+        float sampleSum = 0.f;
+
+        // for every write position in the output arrays
+        for (int writeHead = 0; writeHead < sampleCount; ++writeHead)
+        {
+            
+            // and for both treble horns
+            for (int inputIdx = 0; inputIdx < totalNumInputChannels; ++inputIdx)
+            {
+                // get the appropriate read head function value
+                float readHead = getReadHead(inputIdx, outputIdx, writeHead);
+                
+                int readHeadLo = std::floor(readHead);
+                int readHeadHi = std::ceil(readHead);
+                float proportion = readHead - readHeadLo;
+                
+                float sampleLo = readHeadLo < 0 ? delayLines[inputIdx][(delayLineRecordHeadPosition + readHeadLo) % delayLineLength] : inputs[inputIdx][readHeadLo];
+                float sampleHi = readHeadHi < 0 ? delayLines[inputIdx][(delayLineRecordHeadPosition + readHeadHi) % delayLineLength] : inputs[inputIdx][readHeadHi];
+                
+                // linear interpolation's good enough for you, right? me too
+                float filterAnd = (1.f - proportion) * sampleLo + proportion * sampleHi;
+                
+                // TODO LP filtering happens before summing! (Am I going to need a secondary buffer?)
+                sampleSum += filterAnd;
+            }
+
+            outputs[outputIdx][writeHead] = sampleSum / 2.f;
+        }
     }
 
-    // per channel
-    // TODO have different offsets and functions per channel
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    for (int inputIdx = 0; inputIdx < totalNumInputChannels; ++inputIdx)
     {
-        auto* outChannel = buffer.getWritePointer (channel);
-        auto* inChannel = buffer.getReadPointer(channel);
-
-        // process variable delay
-        for (int writeHead = 0; writeHead < sampleCount; ++writeHead) {
-            float readHead = getReadHead(writeHead);
-
-            int readHeadLo = std::floor(readHead);
-            int readHeadHi = std::ceil(readHead);
-            float proportion = readHead - readHeadLo;
-            
-            float sampleLo = readHeadLo < 0 ? delayLines[channel][(delayLineRecordHeadPosition + readHeadLo) % delayLineLength] : inChannel[readHeadLo];
-            float sampleHi = readHeadHi < 0 ? delayLines[channel][(delayLineRecordHeadPosition + readHeadHi) % delayLineLength] : inChannel[readHeadHi];
-
-            // linear interpolation's good enough for you, right? me too
-            outChannel[writeHead] = (1.f - proportion) * sampleLo + proportion * sampleHi;
-        }
-        
         // record delay line for next pass
         for (
              int readHead = delayLineInputStart, i = delayLineRecordHeadPosition;
              readHead < sampleCount;
              ++readHead, ++i, i %= delayLineLength
              ) {
-                 delayLines[channel][i] = inChannel[readHead];
+                 delayLines[inputIdx][i] = inputs[inputIdx][readHead];
         }
     }
     
@@ -213,12 +227,42 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
 // read head position based on sine shift
 // TODO have shiftable sine rate
-float AuntLeslieAudioProcessor::getReadHead(int writeHead)
+float AuntLeslieAudioProcessor::getReadHead(int hornIdx, int stereoChannel, int writeHead)
 {
     // get current absolute sample time for continuity
     long time = lastSample + writeHead;
-    // offset should always be in the range 0–2, since we can delay the signal but not advance it.
-    float offset = 1.f - std::sin(time * chorale_frequency_per_sample);
+
+    float theta = time * chorale_frequency_per_sample;
+    
+    int sign = 0;
+    
+    switch (hornIdx)
+    {
+        case TREBLE_HORN_A:
+            sign = 1;
+            break;
+        case TREBLE_HORN_B:
+            sign = -1;
+            break;
+    }
+    
+    float longitudinal = 0.f;
+    float transverse = 0.f;
+    
+    switch (stereoChannel)
+    {
+        case LEFT:
+            longitudinal = MIC_DISTANCE - sign * std::sin(theta);
+            transverse = std::cos(theta);
+            break;
+        case RIGHT:
+            longitudinal = MIC_DISTANCE - sign * std::cos(theta);
+            transverse = std::sin(theta);
+            break;
+    }
+    
+    float offset = 1.f + std::sqrt(longitudinal * longitudinal + transverse * transverse);
+
     // multiply offset by horn excursion delay and subtract from write head position
     return writeHead - max_treble_horn_excursion_samples * offset;
 }

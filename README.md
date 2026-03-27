@@ -73,6 +73,31 @@ Using the same definition of $\theta$ above. We will use this to modulate the cu
 
 A more sophisticated analysis, involving the tendency for higher frequency sounds to be more directional, will come in a future version.
 
+## Motor assemblies and rotor speed
+Most of the time, the rotor will operate at a constant RPM, which we call constant speed mode. There are two speeds, tremolo (fast) and chorale (slow). However, it is desirable, when switching between them, that the change is smooth and realistic.
+
+Both treble and bass rotors are driven by essentially the same kind of motor assembly: a pulley is either driven directly by a large motor, or through an idler spindle by a small one. Therefore, the acceleration and braking moments should be identical for both rotors, and the physical differences driven entirely by the pulley ratios and moment of inertia.
+
+The bass rotor has considerably more moment of inertia than the treble rotor, so will tend to speed up and slow down more gradually; the large motor is quite powerful and so can attain full speed relatively quickly, whereas the small motor spindle exerts a smaller braking moment and so the rotor will slow quite gradually.
+
+In all cases, the acceleration behaviour is governed by a differential equation of the form
+
+$\ddot{\theta} = k$
+
+which gives a solution of the form
+
+$\dot{\theta} = kt + a$
+
+$\theta = \frac{kt^2}{2} + at + b$
+
+When the motor speed change is activated, we will take the current value of $\theta = \theta_0$ as $b$, and the current value of $\dot{\theta} = \dot{\theta_0}$ as $a$. Thus, rearranging the expression for $\dot{\theta}$:
+
+$t = \frac{\dot{\theta}_{\text{target}} - \dot{\theta}_0}{k}$
+
+gives the length of time the system must use the square expression to accelerate before returning to constant speed mode.
+
+In future, there will be a continuously variable speed function, called VFD mode, inspired by the VFD-driven rotary speakers built by Sam Battle that can run at any speed at all. It might even be fun to drive the motor harder when the input signal is larger. Absolute scenes.
+
 ## References
 
 Much of the electrical and mechanical detail:
@@ -80,3 +105,7 @@ https://synthfool.com/docs/Leslie/Leslie_760_User_And_Servicemanual/
 
 Rotor speeds:
 https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets-speakers-accessories/41662-leslie-rotor-speeds
+
+Sam Battle's VFD-driven Leslie:
+https://www.youtube.com/watch?v=BuxLnKO7X8k&
+https://www.youtube.com/watch?v=ZemaoRTeqr8

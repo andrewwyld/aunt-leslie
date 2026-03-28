@@ -1,10 +1,15 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+   A U N T   L E S L I E
+   a fully electronic Leslie speaker simulation
+   (c) 2026 Andrew Wyld
 
+   editor code
+ 
   ==============================================================================
 */
+
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"

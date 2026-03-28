@@ -1,8 +1,12 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin processor.
+   A U N T   L E S L I E
+   a fully electronic Leslie speaker simulation
+   (c) 2026 Andrew Wyld
 
+   processor code
+ 
   ==============================================================================
 */
 

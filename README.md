@@ -91,6 +91,12 @@ Left: $sin\theta$
 
 Using the same definition of $\theta$ above. We will use this to modulate the cutoff frequency of a simple discrete filter, finding a good level experimentally.
 
+The filter will use the equation
+
+$x_{n + 1} = (1 - \frac{T_s}{T})x_n + K\frac{T_s}{T}u_n$
+
+where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain, $T$ is the filter time constant and $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
+
 A more sophisticated analysis, involving the tendency for higher frequency sounds to be more directional, will come in a future version.
 
 ### Motor assemblies and rotor speed
@@ -129,6 +135,9 @@ Much of the electrical and mechanical detail:
 Rotor speeds:
 - https://organforum.com/forums/forum/electronic-organs-midi/leslies-tone-cabinets-speakers-accessories/41662-leslie-rotor-speeds
 - https://www.dairiki.org/HammondWiki/LeslieRotationSpeed
+
+Discrete low-pass filter:
+- https://uk.mathworks.com/help/sps/ref/lowpassfilterdiscreteorcontinuous.html#d126e160569
 
 Sam Battle's VFD-driven Leslie:
 - https://www.youtube.com/watch?v=BuxLnKO7X8k&

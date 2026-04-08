@@ -12,6 +12,9 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <cmath>
+
+const float M_TAU = 2.f * M_PI;
 
 //==============================================================================
 AuntLeslieAudioProcessor::AuntLeslieAudioProcessor()
@@ -106,6 +109,8 @@ void AuntLeslieAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     max_treble_horn_excursion_samples = sampleRate * MAX_TREBLE_HORN_EXCURSION_S;
     chorale_frequency_per_sample = CHORALE_HZ / sampleRate;
     tremolo_frequency_per_sample = TREMOLO_HZ / sampleRate;
+    
+    filterSampleTime = 1.f / sampleRate;
 }
 
 void AuntLeslieAudioProcessor::releaseResources()
@@ -119,7 +124,10 @@ void AuntLeslieAudioProcessor::releaseResources()
         delete [] delayLines;
         delayLines = NULL;
     }
-    
+    running[TREBLE_HORN_A][LEFT] = false;
+    running[TREBLE_HORN_A][RIGHT] = false;
+    running[TREBLE_HORN_B][LEFT] = false;
+    running[TREBLE_HORN_B][RIGHT] = false;
 }
 
 void AuntLeslieAudioProcessor::initializeLines(int channelsIn_, int delayLineLength_) {
@@ -179,7 +187,7 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // process variable delay
 
     // for either stereo output channel
-    for (int outputIdx = 0; outputIdx < totalNumOutputChannels; ++outputIdx)
+    for (int stereoChannel = 0; stereoChannel < totalNumOutputChannels; ++stereoChannel)
     {
         float sampleSum = 0.f;
 
@@ -188,26 +196,27 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         {
             
             // and for both treble horns
-            for (int inputIdx = 0; inputIdx < totalNumInputChannels; ++inputIdx)
+            for (int hornIdx = 0; hornIdx < totalNumInputChannels; ++hornIdx)
             {
+                float _theta = theta(writeHead);
+                
                 // get the appropriate read head function value
-                float readHead = getReadHead(inputIdx, outputIdx, writeHead);
+                float readHead = (float) writeHead - getReadHeadOffset(hornIdx, stereoChannel, _theta, writeHead);
                 
                 int readHeadLo = std::floor(readHead);
                 int readHeadHi = std::ceil(readHead);
                 float proportion = readHead - readHeadLo;
                 
-                float sampleLo = readHeadLo < 0 ? delayLines[inputIdx][(delayLineRecordHeadPosition + readHeadLo) % delayLineLength] : inputs[inputIdx][readHeadLo];
-                float sampleHi = readHeadHi < 0 ? delayLines[inputIdx][(delayLineRecordHeadPosition + readHeadHi) % delayLineLength] : inputs[inputIdx][readHeadHi];
+                float sampleLo = readHeadLo < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + readHeadLo) % delayLineLength] : inputs[hornIdx][readHeadLo];
+                float sampleHi = readHeadHi < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + readHeadHi) % delayLineLength] : inputs[hornIdx][readHeadHi];
                 
                 // linear interpolation's good enough for you, right? me too
                 float filterAnd = (1.f - proportion) * sampleLo + proportion * sampleHi;
                 
-                // TODO LP filtering happens before summing! (Am I going to need a secondary buffer?)
-                sampleSum += filterAnd;
+                sampleSum += filter(hornIdx, stereoChannel, _theta, filterAnd);
             }
 
-            outputs[outputIdx][writeHead] = sampleSum / 2.f;
+            outputs[stereoChannel][writeHead] = sampleSum / 2.f;
         }
     }
 
@@ -229,24 +238,33 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     lastSample += sampleCount;
 }
 
-// read head position based on sine shift
-// TODO have shiftable sine rate
-float AuntLeslieAudioProcessor::getReadHead(int hornIdx, int stereoChannel, int writeHead)
+float AuntLeslieAudioProcessor::theta(int idx)
 {
     // get current absolute sample time for continuity
-    long time = lastSample + writeHead;
+    long time = lastSample + idx;
 
-    float theta = time * chorale_frequency_per_sample;
+    return time * chorale_frequency_per_sample;
     
-    int sign = 0;
+    // TODO
+    // - add enum: MODE_CHORALE, MODE_TREMOLO, MODE_ACCELERATE, MODE_DECELERATE
+    // - add square function for MODE_ACCELERATE, MODE_DECELERATE
+    // - add variants for the bass and treble rotors (or separate functions?)
+    // - add mode for tremolo_frequency_per_sample
+}
+
+// read head position based on sine shift
+// TODO have shiftable sine rate
+float AuntLeslieAudioProcessor::getReadHeadOffset(int hornIdx, int stereoChannel, float theta, int writeHead)
+{
+    float sign = 0.f;
     
     switch (hornIdx)
     {
         case TREBLE_HORN_A:
-            sign = 1;
+            sign = 1.f;
             break;
         case TREBLE_HORN_B:
-            sign = -1;
+            sign = -1.f;
             break;
     }
     
@@ -265,10 +283,67 @@ float AuntLeslieAudioProcessor::getReadHead(int hornIdx, int stereoChannel, int 
             break;
     }
     
-    float offset = 1.f + std::sqrt(longitudinal * longitudinal + transverse * transverse);
+    return max_treble_horn_excursion_samples
+    * (1.f + std::sqrt(longitudinal * longitudinal + transverse * transverse));
+}
 
-    // multiply offset by horn excursion delay and subtract from write head position
-    return writeHead - max_treble_horn_excursion_samples * offset;
+/**
+ For simplicity, we define
+
+ $L = 2\pi T_s f_c$
+
+ giving
+
+ $x_{n + 1} = (1 - L)x_n + L K u_n$
+*/
+float AuntLeslieAudioProcessor::getFilterCoefficient(int hornIdx, int stereoChannel, float theta)
+{
+    float sign = 0.f;
+    
+    switch (hornIdx)
+    {
+        case TREBLE_HORN_A:
+            sign = 1.f;
+            break;
+        case TREBLE_HORN_B:
+            sign = -1.f;
+            break;
+    }
+
+    float f_c = 0.f;
+    
+    switch (stereoChannel)
+    {
+        case LEFT:
+            f_c = sign * std::sin(theta);
+            break;
+        case RIGHT:
+            f_c = sign * std::cos(theta);
+            break;
+    }
+    
+    return M_TAU * filterSampleTime * f_c;
+}
+
+/**
+ The filter will use the equation
+
+ $x_{n + 1} = (1 - 2\pi T_s f_c)x_n + 2\pi T_s f_c K u_n$
+
+ where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain (default 1), and $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
+
+ */
+float AuntLeslieAudioProcessor::filter(int hornIdx, int stereoChannel, float theta, float input) {
+    if (! running[hornIdx][stereoChannel])
+    {
+        running[hornIdx][stereoChannel] = true;
+        x_n_minus_one[hornIdx][stereoChannel] = input;
+        return input;
+    }
+    
+    float L = getFilterCoefficient(hornIdx, stereoChannel, theta);
+    
+    return (1.f - L) * x_n_minus_one[hornIdx][stereoChannel] + L * filterGain * input;
 }
 
 //==============================================================================

@@ -48,7 +48,7 @@ public:
     ~AuntLeslieAudioProcessor() override;
 
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
@@ -89,6 +89,9 @@ private:
     
     float chorale_frequency_per_sample = 0.f;
     float tremolo_frequency_per_sample = 0.f;
+    
+    float filterSampleTime = 0.f;
+    float filterGain = 1.f;
 
     int channelsIn = 0;
     int delayLineLength = 0; // must be initialized to INTRINSIC_BUFFER_DELAY * sample rate
@@ -97,7 +100,16 @@ private:
     int delayLineRecordHeadPosition = 0;
     
     void initializeLines(int channelsIn, int delayLineLength);
-    float getReadHead(int hornIdx, int stereoChannel, int writeHead);
+
+    float theta(int idx);
+    
+    float getReadHeadOffset(int hornIdx, int stereoChannel, float theta, int writeHead);
+    float getFilterCoefficient(int hornIdx, int stereoChannel, float theta);
+    float filter(int hornIdx, int stereoChannel, float theta, float input);
 
     long lastSample = 0; // current time
+    
+    bool running[2][2] = {{false, false}, {false, false}};
+
+    float x_n_minus_one[2][2] = {{0.f, 0.f}, {0.f, 0.f}};
 };

@@ -85,9 +85,9 @@ A more advanced future version will allow for a variable phase shift between mic
 ### Filter mathematics
 For now we simply use:
 
-Right: $cos\theta$
+Right: $f_c = cos\theta$
 
-Left: $sin\theta$
+Left: $f_c = sin\theta$
 
 Using the same definition of $\theta$ above. We will use this to modulate the cutoff frequency of a simple discrete filter, finding a good level experimentally.
 
@@ -95,7 +95,11 @@ The filter will use the equation
 
 $x_{n + 1} = (1 - \frac{T_s}{T})x_n + K\frac{T_s}{T}u_n$
 
-where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain, $T$ is the filter time constant and $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
+where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain, $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
+
+$T$ is the filter time constant and is inversely related to the cutoff frequency $f_c$:
+
+$T = \frac{1}{2\pi f_c}$
 
 A more sophisticated analysis, involving the tendency for higher frequency sounds to be more directional, will come in a future version.
 

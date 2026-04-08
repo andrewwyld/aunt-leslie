@@ -315,10 +315,10 @@ float AuntLeslieAudioProcessor::getFilterCoefficient(int hornIdx, int stereoChan
     switch (stereoChannel)
     {
         case LEFT:
-            f_c = sign * std::sin(theta);
+            f_c = CUTOFF_BASE + sign * CUTOFF_VARIATION * std::sin(theta);
             break;
         case RIGHT:
-            f_c = sign * std::cos(theta);
+            f_c = CUTOFF_BASE + sign * CUTOFF_VARIATION * std::cos(theta);
             break;
     }
     
@@ -343,6 +343,7 @@ float AuntLeslieAudioProcessor::filter(int hornIdx, int stereoChannel, float the
     
     float L = getFilterCoefficient(hornIdx, stereoChannel, theta);
     
+    // TODO maybe vary filterGain as a function of f_c?
     return (1.f - L) * x_n_minus_one[hornIdx][stereoChannel] + L * filterGain * input;
 }
 

@@ -25,6 +25,9 @@
 // #define BASS_WEDGE_RADIUS 0.204f ?
 #define SPEED_OF_SOUND_M_S 343.f
 
+#define CUTOFF_BASE 12000.f
+#define CUTOFF_VARIATION 6000.f
+
 //==============================================================================
 /**
 */

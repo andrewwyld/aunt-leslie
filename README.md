@@ -93,13 +93,17 @@ Using the same definition of $\theta$ above. We will use this to modulate the cu
 
 The filter will use the equation
 
-$x_{n + 1} = (1 - \frac{T_s}{T})x_n + K\frac{T_s}{T}u_n$
+$x_{n + 1} = (1 - 2\pi T_s f_c)x_n + 2\pi T_s f_c K u_n$
 
-where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain, $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
+where $u_n$ is the input and $x_n$ is the output at sample $n$, $K$ is the filter gain (default 1), and $T_s$ is the filter sample time (eg 1/96000 seconds, for a 96kHz system).
 
-$T$ is the filter time constant and is inversely related to the cutoff frequency $f_c$:
+For simplicity, we define
 
-$T = \frac{1}{2\pi f_c}$
+$L = 2\pi T_s f_c$
+
+giving 
+
+$x_{n + 1} = (1 - L)x_n + L K u_n$
 
 A more sophisticated analysis, involving the tendency for higher frequency sounds to be more directional, will come in a future version.
 

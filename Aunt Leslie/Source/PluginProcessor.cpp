@@ -208,8 +208,8 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 int readHeadHi = std::ceil(readHead);
                 float proportion = readHead - readHeadLo;
                 
-                float sampleLo = readHeadLo < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + readHeadLo) % delayLineLength] : inputs[hornIdx][readHeadLo];
-                float sampleHi = readHeadHi < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + readHeadHi) % delayLineLength] : inputs[hornIdx][readHeadHi];
+                float sampleLo = readHeadLo < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + delayLineLength + readHeadLo) % delayLineLength] : inputs[hornIdx][readHeadLo];
+                float sampleHi = readHeadHi < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + delayLineLength + readHeadHi) % delayLineLength] : inputs[hornIdx][readHeadHi];
                 
                 // linear interpolation's good enough for you, right? me too
                 float filterAnd = (1.f - proportion) * sampleLo + proportion * sampleHi;

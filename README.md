@@ -1,5 +1,7 @@
 # Aunt Leslie
-This JUCE project is a chorus ensemble effect with synchronized low-pass filter to emulate a Leslie speaker.
+This JUCE project is a chorus ensemble effect with synchronized low-pass filter to simulate a Leslie speaker with microphones positioned to create an interesting stereo image.
+
+![My Leslie 760 with two AKG P170 microphones placed at right angles and aimed at the treble rotor](./README_img/leslie_760_mic_d.jpg)
 
 ## Concept
 ### Leslie speaker basics
@@ -8,7 +10,7 @@ The Leslie speaker passes the sound output of a set of drivers through a set of 
 It was originally designed to work with the Hammond organ, and is part of the characteristic classic Hammond sound.
 
 ### Chorus ensemble
-The chorus ensemble effect is a purely electronic effect that produces some of the same effect as a Leslie speaker. Chorus ensemble effects were first developed sometime in the 1970s, based on the development of the bucket brigade device (BBD) in 1969. The bucket brigade essentially acts like an analogue sampling shift register: it stores charges in a chain of capacitors, and passes these charge values along to allow a snippet of analogue sound to be stored and read out at the other end of the chain.
+The chorus ensemble effect is a purely electronic effect that produces some of the same effect as a Leslie speaker. Chorus ensemble effects were first developed in the 1970s, based on the development of the bucket brigade device (BBD) in 1969. The bucket brigade essentially acts like an analogue sampling shift register: it stores charges in a chain of capacitors, and passes these charge values along to allow a snippet of analogue sound to be stored and read out at the other end of the chain.
 
 Roland produced a seminal chorus ensemble effect using this technology in about 1976; my RS-202 and Juno 60 both essentially use this circuit. In the chorus ensemble, the same variable path-length that the Leslie produces physically is produced electronically using BBDs run at slightly variable rates, meaning the time for the sound to travel through the entire BBD varies slightly with time.
 
@@ -22,6 +24,8 @@ This plugin aims to simulate the geometry and filtering characteristics of the L
 ## Specifics of the Leslie
 ### The Leslie 760
 Some of the numbers given here are from sources given in the references section, but I plan to make measurements of my own unit, a Leslie 760.
+
+![My Leslie 760, proudly solid-state from back when that was considered an advantage](./README_img/leslie_760_head_on.jpg)
 
 I was inspired to get this because of the way George Harrison's Leslie made his guitar sound in *The Beatles: Get Back*, which is to say, magical.
 

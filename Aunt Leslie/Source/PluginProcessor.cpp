@@ -190,12 +190,13 @@ void AuntLeslieAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // for either stereo output channel
     for (int stereoChannel = 0; stereoChannel < totalNumOutputChannels; ++stereoChannel)
     {
-        float sampleSum = 0.f;
 
         // for every write position in the output arrays
         for (int writeHead = 0; writeHead < sampleCount; ++writeHead)
         {
             
+            float sampleSum = 0.f;
+
             // and for both treble horns
             for (int hornIdx = 0; hornIdx < totalNumInputChannels; ++hornIdx)
             {

@@ -41,7 +41,7 @@ public:
     constexpr static float TREMOLO_HZ = TREMOLO_RPM / 60.f;
     constexpr static float TREMOLO_PERIOD_MS = 1000.f / TREMOLO_HZ;
     
-    constexpr static float MAX_TREBLE_HORN_EXCURSION_S = SPEED_OF_SOUND_M_S / TREBLE_HORN_RADIUS_M;
+    constexpr static float MAX_TREBLE_HORN_EXCURSION_S = TREBLE_HORN_RADIUS_M / SPEED_OF_SOUND_M_S;
     constexpr static float INTRINSIC_BUFFER_DELAY_S = MAX_TREBLE_HORN_EXCURSION_S * 3.f;
     
     constexpr static float MIC_DISTANCE = 2.f; // as a factor of the horn radius

@@ -138,6 +138,7 @@ void AuntLeslieAudioProcessor::initializeLines(int channelsIn_, int delayLineLen
 
     for (int i = 0; i < channelsIn; ++ i) {
         delayLines[i] = new float[delayLineLength];
+        std::memset(delayLines[i], 0, delayLineLength * sizeof(float));
     }
 }
 
@@ -243,8 +244,8 @@ float AuntLeslieAudioProcessor::theta(int idx)
     // get current absolute sample time for continuity
     long time = lastSample + idx;
 
-    return time * chorale_frequency_per_sample;
-    
+    return std::fmod(time * chorale_frequency_per_sample, M_TAU);
+
     // TODO
     // - add enum: MODE_CHORALE, MODE_TREMOLO, MODE_ACCELERATE, MODE_DECELERATE
     // - add square function for MODE_ACCELERATE, MODE_DECELERATE

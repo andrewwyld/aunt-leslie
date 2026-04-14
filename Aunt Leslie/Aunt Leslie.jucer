@@ -4,6 +4,8 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="RThC7R" name="Aunt Leslie">
     <GROUP id="{703D321A-AEC1-AA38-7EC2-B817BF9CAE81}" name="Source">
+      <FILE id="gC4gZW" name="Rotor.cpp" compile="1" resource="0" file="Source/Rotor.cpp"/>
+      <FILE id="pfDdmZ" name="Rotor.h" compile="0" resource="0" file="Source/Rotor.h"/>
       <FILE id="isciAE" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="x3CC45" name="PluginProcessor.h" compile="0" resource="0"

@@ -33,9 +33,9 @@ void printTestResult(const char* testName, bool passed) {
 }
 
 // RAII Buffer Manager
-class BufferManager {
+class AudioBufferBlock {
 public:
-    BufferManager(int channels, int samples) 
+    AudioBufferBlock(int channels, int samples) 
         : numChannels(channels), numSamples(samples) {
         inputBuffers.resize(channels);
         outputBuffers.resize(channels);
@@ -163,10 +163,10 @@ bool testProcessBlockProducesOutput() {
     Rotor rotor;
     rotor.initializeLines(NUM_CHANNELS, SAMPLE_RATE);
     
-    BufferManager buffers(NUM_CHANNELS, SAMPLE_COUNT);
+    AudioBufferBlock buffers(NUM_CHANNELS, SAMPLE_COUNT);
     buffers.fillWithSineWave();
     
-    rotor.processBlock(SAMPLE_COUNT, NUM_CHANNELS, buffers.getOutputPointers(), 
+    rotor.processBlock(SAMPLE_COUNT, NUM_CHANNELS, buffers.getOutputPointers(),
                       NUM_CHANNELS, const_cast<const float**>(buffers.getInputPointers()));
     
     bool passed = buffers.hasNonZeroOutput();
@@ -175,11 +175,52 @@ bool testProcessBlockProducesOutput() {
     return passed;
 }
 
+bool testProcessBlockOverlaps() {
+    Rotor rotor;
+    rotor.initializeLines(NUM_CHANNELS, SAMPLE_RATE);
+    
+    const int bufferCount = 3;
+    AudioBufferBlock* buffers[] =
+    {
+        new AudioBufferBlock(NUM_CHANNELS, 64),
+        new AudioBufferBlock(NUM_CHANNELS, 64),
+        new AudioBufferBlock(NUM_CHANNELS, 64)
+    };
+    
+    for (int i = 0; i < bufferCount; ++i)
+    {
+        buffers[i]->fillWithSawtooth();
+        float **outputPointers = buffers[i]->getOutputPointers();
+        float **inputPointers = buffers[i]->getInputPointers();
+        rotor.processBlock(SAMPLE_COUNT, NUM_CHANNELS, outputPointers,
+                           NUM_CHANNELS, const_cast<const float**>(inputPointers));
+        
+        // std::cout << "|______ BUFFER " << i << "\n";
+        for (int j = 0; j < 64; ++j)
+        {
+            std::cout << i * 64 + j << ", " << i << ", " << j << ",";
+            std::cout << inputPointers[0][j] << ", ";
+            std::cout << inputPointers[1][j] << ", ";
+            std::cout << outputPointers[0][j] << ", ";
+            std::cout << outputPointers[1][j] << "\n";
+        }
+        // std::cout << "|______ BUFFER " << i << " ENDS \n\n";
+    }
+    
+    for (int i = 0; i < bufferCount; ++i)
+    {
+        delete buffers[i];
+    }
+        
+    rotor.releaseResources();
+    return true;
+}
+
 bool testMultipleProcessBlockCalls() {
     Rotor rotor;
     rotor.initializeLines(NUM_CHANNELS, SAMPLE_RATE);
     
-    BufferManager buffers(NUM_CHANNELS, SAMPLE_COUNT);
+    AudioBufferBlock buffers(NUM_CHANNELS, SAMPLE_COUNT);
     
     for (int block = 0; block < 10; ++block) {
         buffers.fillWithSineWave(block * SAMPLE_COUNT);
@@ -198,7 +239,7 @@ bool testThetaProgression()
     Rotor rotor;
     rotor.initializeLines(NUM_CHANNELS, SAMPLE_RATE);
     
-    BufferManager buffers(NUM_CHANNELS, SAMPLE_COUNT);
+    AudioBufferBlock buffers(NUM_CHANNELS, SAMPLE_COUNT);
     
     float theta1 = rotor.getTheta(0);
     
@@ -330,7 +371,7 @@ bool testDelayLineReadWrite() {
     Rotor rotor;
     rotor.initializeLines(NUM_CHANNELS, SAMPLE_RATE);
 
-    BufferManager buffers(NUM_CHANNELS, SAMPLE_COUNT);
+    AudioBufferBlock buffers(NUM_CHANNELS, SAMPLE_COUNT);
     buffers.fillWithConstant(0.5f); // Write known value
 
     // Process one block

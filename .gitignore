@@ -41,3 +41,4 @@
 *.dwo
 *.xcuserstate
 /Aunt Leslie/Builds
+Aunt Leslie/Tests/RotorTestHarness

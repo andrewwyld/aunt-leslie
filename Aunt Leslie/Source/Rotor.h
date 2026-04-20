@@ -47,6 +47,26 @@ public:
     void initializeLines(int channelsIn, double sampleRate);
     void releaseResources();
     void processBlock(int sampleCount, int outChannels, float** outputs, int inChannels, const float** inputs);
+    
+    float getReadHeadOffset(int hornIdx, int stereoChannel, float theta) const;
+    
+    // Getters for testing
+    int getDelayLineLength() const { return delayLineLength; }
+    int getChannelsIn() const { return channelsIn; }
+    float getMaxTrebleHornExcursionSamples() const { return max_treble_horn_excursion_samples; }
+    float getChoraleFrequencyPerSample() const { return chorale_frequency_per_sample; }
+    float getTremoloFrequencyPerSample() const { return tremolo_frequency_per_sample; }
+    long getLastSample() const { return lastSample; }
+    float getTheta(int idx) const { return const_cast<Rotor*>(this)->theta(idx); }
+
+    // Getters for testing delay line
+    int getDelayLineRecordHeadPosition() const { return delayLineRecordHeadPosition; }
+    float getDelayLineValue(int channel, int index) const {
+        return delayLines[channel][index];
+    }
+    float* getDelayLinePointer(int channel) const {
+        return delayLines[channel];
+    }
 
 private:
     float max_treble_horn_excursion_samples = 0.f;
@@ -66,7 +86,6 @@ private:
     
     float theta(int idx);
     
-    float getReadHeadOffset(int hornIdx, int stereoChannel, float theta, int writeHead);
     float getFilterCoefficient(int hornIdx, int stereoChannel, float theta);
     float filter(int hornIdx, int stereoChannel, float theta, float input);
 

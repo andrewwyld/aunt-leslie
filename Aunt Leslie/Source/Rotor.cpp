@@ -9,6 +9,8 @@
 */
 
 #include "Rotor.h"
+#include <iostream>
+#include <cassert>
 
 void Rotor::releaseResources()
 {
@@ -33,7 +35,7 @@ void Rotor::initializeLines(int channelsIn_, double sampleRate) {
     
     delayLines = new float*[channelsIn];
 
-    max_treble_horn_excursion_samples = sampleRate * MAX_TREBLE_HORN_EXCURSION_S;
+    max_treble_horn_excursion_samples = std::ceil(sampleRate * MAX_TREBLE_HORN_EXCURSION_S);
     chorale_frequency_per_sample = CHORALE_HZ / sampleRate;
     tremolo_frequency_per_sample = TREMOLO_HZ / sampleRate;
     
@@ -50,9 +52,9 @@ void Rotor::processBlock(int sampleCount, int totalNumOutputChannels, float **ou
     // delay line recording boundaries for all channels
     int delayLineRecordLength = std::fmin(sampleCount, delayLineLength);
     int delayLineInputStart = std::fmax(0, sampleCount - delayLineLength);
-
+    
     // process variable delay
-
+    
     // for either stereo output channel
     for (int stereoChannel = 0; stereoChannel < totalNumOutputChannels; ++stereoChannel)
     {
@@ -62,29 +64,49 @@ void Rotor::processBlock(int sampleCount, int totalNumOutputChannels, float **ou
         {
             
             float sampleSum = 0.f;
+            float _theta = theta(writeHead);
 
             // and for both treble horns
             for (int hornIdx = 0; hornIdx < totalNumInputChannels; ++hornIdx)
             {
-                float _theta = theta(writeHead);
+                float readHeadOffset = getReadHeadOffset(hornIdx, stereoChannel, _theta);
+                
+                // std::cout << (hornIdx == 0 ? "A/": "B/") << (stereoChannel == 0 ? "L, ": "R, ") << _theta << ", " << readHeadOffset << "\n";
                 
                 // get the appropriate read head function value
-                float readHead = (float) writeHead - getReadHeadOffset(hornIdx, stereoChannel, _theta, writeHead);
+                float readHead = (float) writeHead - readHeadOffset;
                 
                 int readHeadLo = std::floor(readHead);
                 int readHeadHi = std::ceil(readHead);
                 float proportion = readHead - readHeadLo;
+
+                int delayLineReadHeadLo = (delayLineRecordHeadPosition + delayLineLength + readHeadLo) % delayLineLength;
+                int delayLineReadHeadHi = (delayLineRecordHeadPosition + delayLineLength + readHeadHi) % delayLineLength;
+
+                assert(proportion >= 0.0f);
+                assert(proportion < 1.0f);
                 
-                float sampleLo = readHeadLo < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + delayLineLength + readHeadLo) % delayLineLength] : inputs[hornIdx][readHeadLo];
-                float sampleHi = readHeadHi < 0 ? delayLines[hornIdx][(delayLineRecordHeadPosition + delayLineLength + readHeadHi) % delayLineLength] : inputs[hornIdx][readHeadHi];
+                float sampleLo = readHeadLo < 0 ? delayLines[hornIdx][delayLineReadHeadLo] : inputs[hornIdx][readHeadLo];
+                float sampleHi = readHeadHi < 0 ? delayLines[hornIdx][delayLineReadHeadHi] : inputs[hornIdx][readHeadHi];
                 
                 // linear interpolation's good enough for you, right? me too
                 float filterAnd = (1.f - proportion) * sampleLo + proportion * sampleHi;
                 
+
                 sampleSum += filterAnd; // filter(hornIdx, stereoChannel, _theta, filterAnd);
             }
 
             outputs[stereoChannel][writeHead] = sampleSum / 2.f;
+
+            /*
+            std::cout
+            << (stereoChannel == 0 ? "L, ": "R, ")
+            << writeHead << ", "
+            << _theta << ", "
+            << inputs[TREBLE_HORN_A][writeHead] << ", "
+            << inputs[TREBLE_HORN_B][writeHead] << ", "
+            << sampleSum << "\n";
+             */
         }
     }
 
@@ -96,14 +118,18 @@ void Rotor::processBlock(int sampleCount, int totalNumOutputChannels, float **ou
              readHead < sampleCount;
              ++readHead, ++i, i %= delayLineLength
              ) {
-                 delayLines[inputIdx][i] = inputs[inputIdx][readHead];
+                 delayLines[inputIdx][i] = (readHead == sampleCount - 1 ? 1.f : 0.f); // inputs[inputIdx][readHead];
+                 
+                 // std::cout << "DL Write: ch=" << inputIdx << ", pos=" << i << ", val=" << inputs[inputIdx][readHead] << "\n";
         }
     }
     
     delayLineRecordHeadPosition += delayLineRecordLength;
     delayLineRecordHeadPosition %= delayLineLength;
-    
+    // std::cout << "delayLineRecordHeadPosition " << delayLineRecordHeadPosition << "\n";
+
     lastSample += sampleCount;
+    // std::cout << "lastSample " << lastSample << "\n";
 }
 
 float Rotor::theta(int idx)
@@ -122,7 +148,7 @@ float Rotor::theta(int idx)
 
 // read head position based on sine shift
 // TODO have shiftable sine rate
-float Rotor::getReadHeadOffset(int hornIdx, int stereoChannel, float theta, int writeHead)
+float Rotor::getReadHeadOffset(int hornIdx, int stereoChannel, float theta) const
 {
     float sign = 0.f;
     
